@@ -1,0 +1,1 @@
+Understanding and learning to create a full stack web application from scratch using .NET Core Web API and Blazor.
