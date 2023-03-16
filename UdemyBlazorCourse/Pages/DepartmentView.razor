@@ -1,0 +1,213 @@
+﻿@page "/department"
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory clientFactory
+@inject Microsoft.Extensions.Configuration.IConfiguration config
+@inject IJSRuntime JS
+
+
+<h3>Department</h3>
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary m-2 float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" @onclick="SetAddModal">Add Department</button>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Department ID</th>
+            <th>Department Name</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var department in departments)
+        {
+            <tr>
+                <td>
+                    @department.DepartmentId
+                </td>
+                <td>
+                    @department.DepartmentName
+                </td>
+                <td>
+                    <button type="button" class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#exampleModal" @onclick="(() => SetEditModal(department))">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                           <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                           <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                         </svg>
+                    </button>
+                            <button type="button" class="btn btn-warning mr-1" data-bs-toggle="modal" data-bs-target="#deleteModal" @onclick="(() => SetDeleteModal(department))">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+                        </svg>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">@modalTitle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <div class="input-group mb-3">
+              <span class="input-group-text">Department Name</span>
+              <input type="text" class="form-control" @bind="departmentName" />
+          </div>
+      </div>
+      <div class="modal-footer">
+          @if(modalTitle == "Add Department")
+          {
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="CreateClick">Create</button>
+          }
+          else
+          {
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="UpdateClick">Update</button>
+          }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">@modalTitle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <div class="input-group mb-3">
+              <span class="input-group-text">Department Name</span>
+              <input type="text" class="form-control" disabled @bind="departmentName" />
+          </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Department Name</span>
+              <input type="text" class="form-control" disabled @bind="departmentId" />
+          </div>
+      </div>
+      <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="(()=>DeleteClick(departmentId))">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+
+    private string modalTitle;
+    private int departmentId;
+    private string departmentName;
+
+    private int deparmentToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await refreshList();
+    }
+
+    public class DepartmentClass
+    {
+        public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; }
+    }
+
+    private IEnumerable<DepartmentClass> departments = Array.Empty<DepartmentClass>();
+
+
+    private async Task refreshList()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, config["API_URL"] + "/department");
+
+        var client = clientFactory.CreateClient();
+
+        var response = await client.SendAsync(request);
+
+        using var responseStream = await response.Content.ReadAsStreamAsync();
+
+        departments = await JsonSerializer.DeserializeAsync<IEnumerable<DepartmentClass>>(responseStream);
+    }
+
+    private async Task CreateClick()
+    {
+        var departmentObj = new DepartmentClass() { DepartmentName = departmentName };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, config["API_URL"] + "/department");
+        request.Content = new StringContent(JsonSerializer.Serialize(departmentObj),null,"application/json");
+
+        var client = clientFactory.CreateClient();
+
+        var response = await client.SendAsync(request);
+
+        using var responseStream = await response.Content.ReadAsStreamAsync();
+
+        string res = await JsonSerializer.DeserializeAsync<string>(responseStream);
+
+        //await JS.InvokeVoidAsync("alert", res);
+
+        await refreshList();
+    }
+
+    private async Task UpdateClick()
+    {
+        var departmentObj = new DepartmentClass() { DepartmentName = departmentName, DepartmentId = departmentId };
+
+        var request = new HttpRequestMessage(HttpMethod.Put, config["API_URL"] + "/department");
+        request.Content = new StringContent(JsonSerializer.Serialize(departmentObj), null, "application/json");
+
+        var client = clientFactory.CreateClient();
+
+        var response = await client.SendAsync(request);
+
+        using var responseStream = await response.Content.ReadAsStreamAsync();
+
+        string res = await JsonSerializer.DeserializeAsync<string>(responseStream);
+
+        //await JS.InvokeVoidAsync("alert", res);
+
+        await refreshList();
+    }
+
+    private async Task DeleteClick(int id)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Delete, config["API_URL"] + "/department/"+id.ToString());
+
+        var client = clientFactory.CreateClient();
+
+        var response = await client.SendAsync(request);
+
+        using var responseStream = await response.Content.ReadAsStreamAsync();
+        string res = await JsonSerializer.DeserializeAsync<string>(responseStream);
+
+        //await JS.InvokeVoidAsync("alert", res);
+
+        await refreshList();
+    }
+
+    private void SetAddModal()
+    {
+        modalTitle = "Add Department";
+        departmentId = 0;
+        departmentName = "";
+    }
+
+    private void SetEditModal(DepartmentClass department)
+    {
+        modalTitle = "Edit Department";
+        departmentId = department.DepartmentId;
+        departmentName = department.DepartmentName;
+    }
+
+    private void SetDeleteModal(DepartmentClass department)
+    {
+        modalTitle = "Are you sure you wish to delete this department?";
+        departmentId = department.DepartmentId;
+        departmentName = department.DepartmentName;
+    }
+}

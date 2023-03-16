@@ -136,7 +136,6 @@ namespace UdemyCourse.Controllers
         {
             try
             {
-
                 var httpRequest = Request.Form;
                 var postedFile = httpRequest.Files[0];
                 var fileName = postedFile.FileName;
